@@ -22,6 +22,19 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+  100: {
+    id: 100,
+    email: "a@email.com",
+    password: 123
+  },
+  200: {
+    id: 200,
+    email: "b@email.com",
+    password: 234
+  }
+};
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
