@@ -10,12 +10,22 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 app.set("view engine", "ejs");
 
+// HELPER FUNCTIONS
 const generateRandomString = function() {
   const randomNumber = Math.random().toString(36).substr(2, 6);
   return randomNumber;
 };
 
 generateRandomString();
+
+const generateRandomUserID = function(length) {
+  let randomID = Math.floor(Math.random() * 1000);
+
+  while (randomID.length <= length) {
+    randomID = "0" + randomID;
+  }
+  return randomID;
+};
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -108,6 +118,18 @@ app.post("/login", (req, res) => {
 
 app.post("/logout", (req, res) => {
   res.clearCookie("username");
+  res.redirect("/urls");
+});
+
+app.post("/register", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  const id = generateRandomUserID(4);
+
+  users[id] = { id, email, password };
+
+  res.cookie("user_id", id);
+  console.log(users);
   res.redirect("/urls");
 });
 
