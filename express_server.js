@@ -16,12 +16,13 @@ const generateRandomString = function() {
   return randomNumber;
 };
 
-const generateRandomUserID = function() {
+const generateRandomUserID = function(length) {
   let randomID = Math.floor(Math.random() * 1000);
 
-  // while (randomID.toString().length < length) {
-  //   randomID = '0' + randomID;
-  // }
+  while (randomID.toString().length < length) {
+    randomID = '0' + randomID;
+  }
+
   return randomID;
 };
 
@@ -144,8 +145,6 @@ app.post('/login', (req, res) => {
 
 
   if (password !== user.password) {
-    console.log(password);
-    console.log(user.password);
     return res.status(403).send('Incorrect password.');
   }
 
@@ -161,7 +160,7 @@ app.post('/logout', (req, res) => {
 app.post('/register', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const id = generateRandomUserID(2);
+  const id = generateRandomUserID(3);
 
   if (!email || ! password) {
     return res.status(400).send('Email or password cannot be blank.');
