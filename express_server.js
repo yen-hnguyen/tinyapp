@@ -16,15 +16,24 @@ const generateRandomString = function() {
   return randomNumber;
 };
 
-generateRandomString();
-
-const generateRandomUserID = function(length) {
+const generateRandomUserID = function() {
   let randomID = Math.floor(Math.random() * 1000);
 
-  while (randomID.length <= length) {
-    randomID = "0" + randomID;
-  }
+  // while (randomID.toString().length < length) {
+  //   randomID = "0" + randomID;
+  // }
   return randomID;
+};
+
+const findUserByEmail = (email, users) => {
+  for (const userID in users) {
+    const user = users[userID];
+
+    if (user.email === email) {
+      return user;
+    }
+  }
+  return null;
 };
 
 const urlDatabase = {
@@ -65,13 +74,13 @@ app.get("/set", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"]
+    user: users[req.cookies["user_id"]]
   };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { username: req.cookies["username"] };
+  const templateVars = { user: req.cookies["user"] };
   res.render("urls_new", templateVars);
 });
 
@@ -79,7 +88,7 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = {
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id],
-    username: req.cookies["username"]
+    user: users[req.cookies["user_id"]]
   };
   res.render("urls_show", templateVars);
 });
@@ -87,7 +96,7 @@ app.get("/urls/:id", (req, res) => {
 app.get("/register", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"]
+    user: users[req.cookies["user_id"]]
   };
   res.render("register", templateVars);
 });
@@ -112,24 +121,33 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body["username"]);
+  res.cookie("user", users[req.cookies["user_id"]]),
   res.redirect("/urls");
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const id = generateRandomUserID(4);
+  const id = generateRandomUserID(2);
+
+  if (!email || ! password) {
+    return res.status(400).send("Email or password cannot be blank.");
+  }
+
+  const user = findUserByEmail(email, users);
+
+  if (user) {
+    return res.status(400).send("There is existing account associated with the email.");
+  }
 
   users[id] = { id, email, password };
 
   res.cookie("user_id", id);
-  console.log(users);
   res.redirect("/urls");
 });
 
