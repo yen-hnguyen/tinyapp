@@ -83,6 +83,10 @@ app.get('/urls', (req, res) => {
 });
 
 app.get('/urls/new', (req, res) => {
+  if (!users[req.body.id]) {
+    return res.status(400).send("You need to login or register to create new URL");
+  }
+
   const templateVars = { user: req.cookies['user'] };
   res.render('urls_new', templateVars);
 });
