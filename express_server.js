@@ -2,7 +2,7 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
-const { request } = require('express');
+const bcrypt = require('bcrypt');
 
 const app = express();
 const PORT = 8080;
@@ -167,20 +167,17 @@ app.post('/urls/:id', (req, res) => {
 app.post('/login', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10);
 
-  if (!email || ! password) {
+  if (!email || !password) {
     return res.status(400).send('Email or password cannot be blank.');
   }
 
   const user = findUserByEmail(email, users);
+  console.log(users);
 
-  if (!user) {
-    return res.status(403).send('Invalid email.');
-  }
-
-
-  if (password !== user.password) {
-    return res.status(403).send('Incorrect password.');
+  if (!user || !bcrypt.compareSync(password, hashedPassword)) {
+    return res.status(403).send('Invalid email or password');
   }
 
   res.cookie('user_id', user.id),
@@ -188,6 +185,7 @@ app.post('/login', (req, res) => {
 });
 
 app.post('/logout', (req, res) => {
+  console.log(users);
   res.clearCookie('user_id');
   res.redirect('/urls');
 });
@@ -195,9 +193,10 @@ app.post('/logout', (req, res) => {
 app.post('/register', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10);
   const id = generateRandomUserID(3);
 
-  if (!email || ! password) {
+  if (!email || !password) {
     return res.status(400).send('Email or password cannot be blank.');
   }
 
@@ -207,7 +206,9 @@ app.post('/register', (req, res) => {
     return res.status(400).send('There is existing account associated with the email.');
   }
 
-  users[id] = { id, email, password };
+  users[id] = { id, email, hashedPassword };
+  
+  console.log(users);
 
   res.cookie('user_id', id);
   res.redirect('/urls');
