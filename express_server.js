@@ -13,6 +13,7 @@ app.use(morgan('dev'));
 
 app.set('view engine', 'ejs');
 
+/* ------------------------------------ */
 // HELPER FUNCTIONS
 const generateRandomString = function() {
   const randomNumber = Math.random().toString(36).substr(2, 6);
@@ -39,6 +40,18 @@ const findUserByEmail = (email, users) => {
   }
   return null;
 };
+
+const urlsForUserID = (id, urlDatabase) => {
+  const userURLs = {};
+  for (let url in urlDatabase) {
+    if (urlDatabase[url].userID === id) {
+      userURLs[url] = urlDatabase[url];
+    }
+  }
+  return userURLs;
+};
+
+/* ------------------------------------ */
 
 const urlDatabase = {
   'b2xVn2': { longURL: 'http://www.lighthouselabs.ca', userID: '100' },
@@ -76,11 +89,14 @@ app.get('/set', (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
+  const userURLs = urlsForUserID(req.cookies['user_id'], urlDatabase);
   const templateVars = {
-    urls: urlDatabase,
+    urls: userURLs,
     user: users[req.cookies['user_id']]
   };
+  console.log(templateVars);
   res.render('urls_index', templateVars);
+
 });
 
 app.get('/urls/new', (req, res) => {
@@ -93,10 +109,13 @@ app.get('/urls/new', (req, res) => {
 });
 
 app.get('/urls/:id', (req, res) => {
+  const userURLs = urlsForUserID(req.cookies['user_id'], urlDatabase);
+
   const templateVars = {
+    urls: userURLs,
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
-    user: users[req.cookies['user_id']]
+    user: users[req.cookies['user_id']],
   };
   res.render('urls_show', templateVars);
 });
