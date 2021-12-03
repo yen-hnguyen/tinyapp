@@ -2,6 +2,7 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
+const { request } = require('express');
 
 const app = express();
 const PORT = 8080;
@@ -40,8 +41,8 @@ const findUserByEmail = (email, users) => {
 };
 
 const urlDatabase = {
-  'b2xVn2': 'http://www.lighthouselabs.ca',
-  '9sm5xK': 'http://www.google.com'
+  'b2xVn2': { longURL: 'http://www.lighthouselabs.ca', userID: '100' },
+  '9sm5xK': { longURL: 'http://www.google.com', userID: '200' }
 };
 
 const users = {
@@ -94,7 +95,7 @@ app.get('/urls/new', (req, res) => {
 app.get('/urls/:id', (req, res) => {
   const templateVars = {
     shortURL: req.params.id,
-    longURL: urlDatabase[req.params.id],
+    longURL: urlDatabase[req.params.id].longURL,
     user: users[req.cookies['user_id']]
   };
   res.render('urls_show', templateVars);
