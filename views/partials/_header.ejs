@@ -10,14 +10,11 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-
     <% if(!user) { %>
-    <form class="form-inline" action="/login" method="POST">
-      <div class="form-group">
-        <input class="form-control mr-2 ml-2" type="text" name="user" placeholder="Username" style="width: 200px">
-        <button type="submit" class="btn btn-outline-dark">Login</button>
-      </div>
-    </form>
+    <div>
+      <a href="/login" class="btn btn-light">Login</a>
+      <a href="/register" class="btn btn-light ml-3">Register</a>
+    </div>
     <% } %>
 
     <% if(user) { %>
