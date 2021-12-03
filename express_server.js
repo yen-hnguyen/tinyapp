@@ -89,12 +89,13 @@ app.get('/set', (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
-  const userURLs = urlsForUserID(req.cookies['user_id'], urlDatabase);
+  const userID = req.cookies['user_id'];
+  const userURLs = urlsForUserID(userID, urlDatabase);
+
   const templateVars = {
     urls: userURLs,
-    user: users[req.cookies['user_id']]
+    user: users[userID]
   };
-  console.log(templateVars);
   res.render('urls_index', templateVars);
 
 });
@@ -109,13 +110,14 @@ app.get('/urls/new', (req, res) => {
 });
 
 app.get('/urls/:id', (req, res) => {
-  const userURLs = urlsForUserID(req.cookies['user_id'], urlDatabase);
+  const userID = req.cookies.user_id;
+  const userURLs = urlsForUserID(userID, urlDatabase);
 
   const templateVars = {
     urls: userURLs,
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
-    user: users[req.cookies['user_id']],
+    user: req.cookies.user_id
   };
   res.render('urls_show', templateVars);
 });
@@ -123,7 +125,7 @@ app.get('/urls/:id', (req, res) => {
 app.get('/login', (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    user: users[req.cookies['user_id']]
+    user: users[req.cookies.user_id]
   };
   res.render('login', templateVars);
 });
@@ -131,7 +133,7 @@ app.get('/login', (req, res) => {
 app.get('/register', (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    user: users[req.cookies['user_id']]
+    user: req.cookies.user_id
   };
   res.render('register', templateVars);
 });
@@ -143,8 +145,15 @@ app.post('/urls', (req, res) => {
 });
 
 app.post('/urls/:id/delete', (req, res) => {
+  const userID = req.cookies.user_id;
   const shortURL = req.params.id;
+
+  if (userID !== urlDatabase[shortURL].userID) {
+    return res.status(401).send("You don't have permission to delete this URL");
+  }
+
   delete urlDatabase[shortURL];
+  
   res.redirect('/urls');
 });
 
