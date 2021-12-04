@@ -11,7 +11,7 @@ const { findUserByEmail, generateRandomString, generateRandomUserID, urlsForUser
 
 app.use(cookieSession({
   name: 'session',
-  keys: ['key1', 'key2'],
+  keys: ['key1'],
   maxAge: 24 * 60 * 60 * 1000
 }));
 app.use(bodyParser.urlencoded({extended: true}));
@@ -20,25 +20,28 @@ app.use(morgan('dev'));
 app.set('view engine', 'ejs');
 
 const urlDatabase = {
-  'b2xVn2': { longURL: 'http://www.lighthouselabs.ca', userID: '100' },
-  '9sm5xK': { longURL: 'http://www.google.com', userID: '200' }
+  'b2xVn2': { longURL: 'http://www.lighthouselabs.ca', userID: '322' },
+  '9sm5xK': { longURL: 'http://www.google.com', userID: '921' }
 };
 
 const users = {
-  '100': {
-    id: '100',
-    email: 'a@email.com',
-    password: '123'
+  '322': {
+    id: 322,
+    email: 'a@gmail.com',
+    password: '$2b$10$k4U0SIjW6p.DqahikvUcEewpcJ0c.WtkUGwD7vG2eheR1gdpLzqja'
+    // user password : 123
   },
-  '200': {
-    id: '200',
-    email: 'b@email.com',
-    password: '234'
+
+  '921': {
+    id: '921',
+    email: 'b@gmail.com',
+    password: '$2b$10$JUDRsJ4L6IsM5P.l/p5H5uoHYKQzBBS/hUnMG5OrizsIIqWAWF54m'
   }
 };
 
 
 /* --------GET ROUTE--------- */
+
 app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
@@ -56,7 +59,7 @@ app.get('/urls', (req, res) => {
 
 app.get('/urls/new', (req, res) => {
   if (!users[req.body.id]) {
-    return res.status(400).send("You need to login or register to create new URL");
+    return res.status(400).render('login', { errMsg: 'You need to login or register to create new ULR'});
   }
   const templateVars = { user: req.session['user'] };
 
@@ -127,18 +130,20 @@ app.post('/urls/:id', (req, res) => {
 app.post('/login', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const hashedPassword = bcrypt.hashSync(password, 10);
-
+  let errMsg = '';
+  
   if (!email || !password) {
-    return res.status(400).send('Email or password cannot be blank.');
+    errMsg = 'Email or Password cannot be blank.';
+    return res.status(400).render('login', { errMsg });
   }
-
+  
   const user = findUserByEmail(email, users);
 
-  if (!user || !bcrypt.compareSync(password, hashedPassword)) {
-    return res.status(403).send('Invalid email or password');
+  if (!user || !bcrypt.compareSync(password, user.password)) {
+    errMsg = 'Incorrect Email or Password.';
+    return res.status(400).render('login', { errMsg });
   }
-  console.log(hashedPassword);
+
   // eslint-disable-next-line camelcase
   req.session.user_id = user.id;
   res.redirect('/urls');
@@ -154,19 +159,25 @@ app.post('/register', (req, res) => {
   const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(password, 10);
   const id = generateRandomUserID(3);
+  let errMsg = '';
 
   if (!email || !password) {
-    return res.status(400).send('Email or password cannot be blank.');
+    errMsg = 'Email or Password cannot be blank.';
+    return res.status(400).render('login', { errMsg });
   }
 
   const user = findUserByEmail(email, users);
-
+  
   if (user) {
-    return res.status(400).send('There is existing account associated with the email.');
+    errMsg = 'There is existing account associated with the email.';
+    return res.status(400).render('login', { errMsg });
   }
 
   users[id] = { id, email, hashedPassword };
 
+  console.log(hashedPassword);
+  console.log(password);
+  console.log(users);
   // eslint-disable-next-line camelcase
   req.session.user_id = id;
   res.redirect('/urls');
