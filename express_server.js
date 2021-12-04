@@ -1,5 +1,5 @@
 const express = require('express');
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const bcrypt = require('bcrypt');
@@ -7,7 +7,11 @@ const bcrypt = require('bcrypt');
 const app = express();
 const PORT = 8080;
 
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2'],
+  maxAge: 24 * 60 * 60 * 1000
+}));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(morgan('dev'));
 
@@ -89,7 +93,7 @@ app.get('/set', (req, res) => {
 });
 
 app.get('/urls', (req, res) => {
-  const userID = req.cookies['user_id'];
+  const userID = req.session.user_id;
   const userURLs = urlsForUserID(userID, urlDatabase);
 
   const templateVars = {
@@ -105,19 +109,19 @@ app.get('/urls/new', (req, res) => {
     return res.status(400).send("You need to login or register to create new URL");
   }
 
-  const templateVars = { user: req.cookies['user'] };
+  const templateVars = { user: req.session['user'] };
   res.render('urls_new', templateVars);
 });
 
 app.get('/urls/:id', (req, res) => {
-  const userID = req.cookies.user_id;
+  const userID = req.session.user_id;
   const userURLs = urlsForUserID(userID, urlDatabase);
 
   const templateVars = {
     urls: userURLs,
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
-    user: req.cookies.user_id
+    user: req.session.user_id
   };
   res.render('urls_show', templateVars);
 });
@@ -125,7 +129,7 @@ app.get('/urls/:id', (req, res) => {
 app.get('/login', (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    user: users[req.cookies.user_id]
+    user: users[req.session.user_id]
   };
   res.render('login', templateVars);
 });
@@ -133,7 +137,7 @@ app.get('/login', (req, res) => {
 app.get('/register', (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    user: req.cookies.user_id
+    user: req.session.user_id
   };
   res.render('register', templateVars);
 });
@@ -145,7 +149,7 @@ app.post('/urls', (req, res) => {
 });
 
 app.post('/urls/:id/delete', (req, res) => {
-  const userID = req.cookies.user_id;
+  const userID = req.session.user_id;
   const shortURL = req.params.id;
 
   if (userID !== urlDatabase[shortURL].userID) {
@@ -180,7 +184,8 @@ app.post('/login', (req, res) => {
     return res.status(403).send('Invalid email or password');
   }
 
-  res.cookie('user_id', user.id),
+  // eslint-disable-next-line camelcase
+  req.session.user_id = user.id;
   res.redirect('/urls');
 });
 
@@ -210,7 +215,8 @@ app.post('/register', (req, res) => {
   
   console.log(users);
 
-  res.cookie('user_id', id);
+  // eslint-disable-next-line camelcase
+  req.session.user_id = id;
   res.redirect('/urls');
 });
 
