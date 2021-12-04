@@ -9,9 +9,11 @@
   <title>TinyApp</title>
 </head>
 <body>
-<header><%-include('partials/_header') %></header>
+<%-include('partials/_header') %>
 <% if (!user) { %>
-  <p>You need to login to see this page</p>
+  <div class='alert alert-danger text-center'>
+      <strong>Error: You need to login or register to see this page</strong>
+    </div>
 <% } %>
 
 <% if (user) { %>
