@@ -37,21 +37,10 @@ const users = {
   }
 };
 
-app.get('/', (req, res) => {
-  res.send('Hello!');
-});
 
+/* --------GET ROUTE--------- */
 app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
-});
-
-app.get('/hello', (req, res) => {
-  res.send('<html><body>Hello <b>World</b></body></html>\n');
-});
-
-app.get('/set', (req, res) => {
-  const a = 1;
-  res.send(`a = ${a}`);
 });
 
 app.get('/urls', (req, res) => {
@@ -63,15 +52,14 @@ app.get('/urls', (req, res) => {
     user: users[userID]
   };
   res.render('urls_index', templateVars);
-
 });
 
 app.get('/urls/new', (req, res) => {
   if (!users[req.body.id]) {
     return res.status(400).send("You need to login or register to create new URL");
   }
-
   const templateVars = { user: req.session['user'] };
+
   res.render('urls_new', templateVars);
 });
 
@@ -86,6 +74,11 @@ app.get('/urls/:id', (req, res) => {
     user: req.session.user_id
   };
   res.render('urls_show', templateVars);
+});
+
+app.get('/u/:id', (req, res) => {
+  const longURL = urlDatabase[req.params.id].longURL;
+  res.redirect(longURL);
 });
 
 app.get('/login', (req, res) => {
@@ -104,6 +97,8 @@ app.get('/register', (req, res) => {
   res.render('register', templateVars);
 });
 
+
+/* --------POST ROUTE--------- */
 app.post('/urls', (req, res) => {
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
@@ -117,7 +112,6 @@ app.post('/urls/:id/delete', (req, res) => {
   if (userID !== urlDatabase[shortURL].userID) {
     return res.status(401).send("You don't have permission to delete this URL");
   }
-
   delete urlDatabase[shortURL];
   
   res.redirect('/urls');
@@ -140,21 +134,19 @@ app.post('/login', (req, res) => {
   }
 
   const user = findUserByEmail(email, users);
-  console.log(users);
 
   if (!user || !bcrypt.compareSync(password, hashedPassword)) {
     return res.status(403).send('Invalid email or password');
   }
-
+  console.log(hashedPassword);
   // eslint-disable-next-line camelcase
   req.session.user_id = user.id;
   res.redirect('/urls');
 });
 
 app.post('/logout', (req, res) => {
-  console.log(users);
-  res.clearCookie('user_id');
-  res.redirect('/urls');
+  req.session = null;
+  res.redirect('/login');
 });
 
 app.post('/register', (req, res) => {
@@ -174,17 +166,10 @@ app.post('/register', (req, res) => {
   }
 
   users[id] = { id, email, hashedPassword };
-  
-  console.log(users);
 
   // eslint-disable-next-line camelcase
   req.session.user_id = id;
   res.redirect('/urls');
-});
-
-app.get('/u/:id', (req, res) => {
-  const longURL = urlDatabase[req.params.id];
-  res.redirect(longURL);
 });
 
 
