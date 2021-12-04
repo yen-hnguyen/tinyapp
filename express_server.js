@@ -7,6 +7,8 @@ const bcrypt = require('bcrypt');
 const app = express();
 const PORT = 8080;
 
+const { findUserByEmail, generateRandomString, generateRandomUserID, urlsForUserID } = require('./helpers');
+
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2'],
@@ -16,46 +18,6 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(morgan('dev'));
 
 app.set('view engine', 'ejs');
-
-/* ------------------------------------ */
-// HELPER FUNCTIONS
-const generateRandomString = function() {
-  const randomNumber = Math.random().toString(36).substr(2, 6);
-  return randomNumber;
-};
-
-const generateRandomUserID = function(length) {
-  let randomID = Math.floor(Math.random() * 1000);
-
-  while (randomID.toString().length < length) {
-    randomID = '0' + randomID;
-  }
-
-  return randomID;
-};
-
-const findUserByEmail = (email, users) => {
-  for (const userID in users) {
-    const user = users[userID];
-
-    if (user.email === email) {
-      return user;
-    }
-  }
-  return null;
-};
-
-const urlsForUserID = (id, urlDatabase) => {
-  const userURLs = {};
-  for (let url in urlDatabase) {
-    if (urlDatabase[url].userID === id) {
-      userURLs[url] = urlDatabase[url];
-    }
-  }
-  return userURLs;
-};
-
-/* ------------------------------------ */
 
 const urlDatabase = {
   'b2xVn2': { longURL: 'http://www.lighthouselabs.ca', userID: '100' },
