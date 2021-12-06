@@ -63,11 +63,11 @@ app.get('/urls', (req, res) => {
 
 app.get('/urls/new', (req, res) => {
   const userID = req.session.user_id;
+  const newLongURL = req.params.longURL;
   const templateVars = {
     urls: urlDatabase,
     user: users[userID]
   };
-
   res.render('urls_new', templateVars);
 });
 
@@ -101,6 +101,7 @@ app.get('/register', (req, res) => {
     urls: urlDatabase,
     user: req.session.user_id
   };
+  console.log(users);
   res.render('register', templateVars);
 });
 
@@ -134,13 +135,14 @@ app.put('/urls/:id', (req, res) => {
   const updatedLongURL = req.body.longURL;
 
   urlDatabase[shortURL].longURL = updatedLongURL;
-  console.log(updatedLongURL);
+
   res.redirect('/urls/');
 });
 
 app.post('/login', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  const user = findUserByEmail(email, users);
   let errMsg = '';
   
   if (!email || !password) {
@@ -148,13 +150,11 @@ app.post('/login', (req, res) => {
     return res.status(400).render('login', { errMsg });
   }
   
-  const user = findUserByEmail(email, users);
-
   if (!user || !bcrypt.compareSync(password, user.password)) {
     errMsg = 'Incorrect Email or Password.';
     return res.status(400).render('login', { errMsg });
   }
-  console.log(users);
+
   // eslint-disable-next-line camelcase
   req.session.user_id = user.id;
   res.redirect('/urls');
@@ -166,18 +166,18 @@ app.post('/register', (req, res) => {
   const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(password, 10);
   const id = generateRandomUserID(3);
+  const user = findUserByEmail(email, users);
   let errMsg = '';
 
   if (!email || !password) {
     errMsg = 'Email or Password cannot be blank.';
-    return res.status(400).render('login', { errMsg });
+    return res.status(400).render('register', { errMsg, user });
   }
 
-  const user = findUserByEmail(email, users);
-  
-  if (user) {
+
+  if (user.email === email) {
     errMsg = 'There is existing account associated with the email.';
-    return res.status(400).render('login', { errMsg });
+    return res.status(400).render('register', { errMsg, user });
   }
 
   users[id] = { id, email, hashedPassword };
