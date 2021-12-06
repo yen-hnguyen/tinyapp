@@ -10,5 +10,12 @@
         <a class='nav-item nav-link' href='/urls/new'>Create New URL</a>
       </div>
     </div>
+    <% if (user) { %>
+    <form class="form-inline" action="/logout" method="POST">
+      <div class="form-group">
+        <button type="submit" class="btn btn-outline-light">Logout</button>
+      </div>
+    </form>
+    <% } %>  
   </nav>
 </header>
