@@ -56,7 +56,7 @@ app.get('/urls', (req, res) => {
 
   const templateVars = {
     urls: userURLs,
-    user: users[userID]
+    user: users[userID],
   };
   res.render('urls_index', templateVars);
 });
@@ -108,8 +108,12 @@ app.get('/register', (req, res) => {
 /* --------POST ROUTE--------- */
 app.post('/urls', (req, res) => {
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
-  res.redirect(`/urls/${shortURL}`);
+  urlDatabase[shortURL] = {
+    longURL: req.body.longURL,
+    userID: req.session.user_id
+  };
+  console.log(urlDatabase);
+  res.redirect(`urls/${shortURL}`);
 });
 
 app.delete('/urls/:id', (req, res) => {
@@ -156,10 +160,6 @@ app.post('/login', (req, res) => {
   res.redirect('/urls');
 });
 
-app.post('/logout', (req, res) => {
-  req.session = null;
-  res.redirect('/login');
-});
 
 app.post('/register', (req, res) => {
   const email = req.body.email;
@@ -187,6 +187,10 @@ app.post('/register', (req, res) => {
   res.redirect('/urls');
 });
 
+app.post('/logout', (req, res) => {
+  req.session = null;
+  res.redirect('/login');
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
