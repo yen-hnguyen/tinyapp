@@ -26,7 +26,7 @@ const urlDatabase = {
 
 const users = {
   '322': {
-    id: 322,
+    id: '322',
     email: 'a@gmail.com',
     password: '$2b$10$k4U0SIjW6p.DqahikvUcEewpcJ0c.WtkUGwD7vG2eheR1gdpLzqja'
     // user password : 123
@@ -36,6 +36,7 @@ const users = {
     id: '921',
     email: 'b@gmail.com',
     password: '$2b$10$JUDRsJ4L6IsM5P.l/p5H5uoHYKQzBBS/hUnMG5OrizsIIqWAWF54m'
+    // user password: abc
   }
 };
 
@@ -58,11 +59,13 @@ app.get('/urls', (req, res) => {
 });
 
 app.get('/urls/new', (req, res) => {
-  if (!users[req.body.id]) {
-    return res.status(400).render('login', { errMsg: 'You need to login or register to create new ULR'});
-  }
-  const templateVars = { user: req.session['user'] };
+  const userID = req.session.user_id;
+  const userURLs = urlsForUserID(userID, urlDatabase);
 
+  const templateVars = {
+    urls: userURLs,
+    user: users[userID]
+  };
   res.render('urls_new', templateVars);
 });
 
@@ -143,7 +146,7 @@ app.post('/login', (req, res) => {
     errMsg = 'Incorrect Email or Password.';
     return res.status(400).render('login', { errMsg });
   }
-
+  console.log(users);
   // eslint-disable-next-line camelcase
   req.session.user_id = user.id;
   res.redirect('/urls');
