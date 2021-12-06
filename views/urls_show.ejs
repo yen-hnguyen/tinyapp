@@ -13,30 +13,32 @@
 <%-include('partials/_header') %>
 
 <% if (!user) { %>
-  <p>You need to login to see this page.</p>
-<% } %>
-
-<% if (user.id !== urls.userID) { %>
-  <p>This URL is not belong to you</p>
-<% } else { %>
-  <div class='container'>
-  <div class='card text-center'>
-    <div class='card-header'></div>
-    <div class='card-body'>
-      <h5 class='card-title'>TinyURL for: <%= longURL %></h5>
-      <p class='card-text'>Short URL: <a href='/u/<%= shortURL %>'><%= shortURL %></a></p>
-    </div>
-    <div class='card-footer text-muted justify-content-center align-items-center'>
-      <h2>Edit</h2>
-      <form class='form-inline justify-content-center' method='POST' action='/urls/<%= shortURL %>' name='longURL'>
-        <div class='form-group mb-2'>
-          <label for='longURL'>New URL:</label>
-          <input type='text' class='form-control ml-1 mr-1' name='longURL' placeholder='<%= longURL %>'>
-          <button type='submit' class='btn btn-primary'>Submit</button>
-        </div>
-      </form>
-    </div>
+  <div class='alert alert-danger text-center'>
+    <strong>Error: You need to <a href="/login">login</a> or <a href="/register">register</a> to see this page</strong>
   </div>
+<% } else if (urls[shortURL].userID !== user) { %>
+  <div class='alert alert-danger text-center'>
+    <strong>Error: This URL is not belong to you</strong>
+  </div>
+<% } else {  %>
+  <div class='container'>
+    <div class='card text-center'>
+      <div class='card-header'></div>
+      <div class='card-body'>
+        <h5 class='card-title'>TinyURL for: <%= longURL %></h5>
+        <p class='card-text'>Short URL: <a href='/u/<%= shortURL %>'><%= shortURL %></a></p>
+      </div>
+      <div class='card-footer text-muted justify-content-center align-items-center'>
+        <h2>Edit</h2>
+        <form class='form-inline justify-content-center' method='POST' action='/urls/<%= shortURL %>?_method=PUT'>
+          <div class="form-group">
+            <label for='longURL'>New URL:</label>
+            <input type='text' class='form-control ml-1 mr-1' name='longURL' placeholder='<%= longURL %>'> 
+            <button type="submit" class="btn btn-outline-primary">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 <% } %>
 

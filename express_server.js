@@ -3,11 +3,12 @@ const cookieSession = require('cookie-session');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const bcrypt = require('bcrypt');
+const methodeOverride = require('method-override');
+const { findUserByEmail, generateRandomString, generateRandomUserID, urlsForUserID } = require('./helpers');
 
 const app = express();
 const PORT = 8080;
 
-const { findUserByEmail, generateRandomString, generateRandomUserID, urlsForUserID } = require('./helpers');
 
 app.use(cookieSession({
   name: 'session',
@@ -16,8 +17,11 @@ app.use(cookieSession({
 }));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(morgan('dev'));
+app.use(methodeOverride('_method'));
 
 app.set('view engine', 'ejs');
+
+/* --------TEST DATABASE--------- */
 
 const urlDatabase = {
   'b2xVn2': { longURL: 'http://www.lighthouselabs.ca', userID: '322' },
@@ -40,7 +44,6 @@ const users = {
   }
 };
 
-
 /* --------GET ROUTE--------- */
 
 app.get('/urls.json', (req, res) => {
@@ -60,25 +63,23 @@ app.get('/urls', (req, res) => {
 
 app.get('/urls/new', (req, res) => {
   const userID = req.session.user_id;
-  const userURLs = urlsForUserID(userID, urlDatabase);
-
   const templateVars = {
-    urls: userURLs,
+    urls: urlDatabase,
     user: users[userID]
   };
+
   res.render('urls_new', templateVars);
 });
 
 app.get('/urls/:id', (req, res) => {
   const userID = req.session.user_id;
-  const userURLs = urlsForUserID(userID, urlDatabase);
-
   const templateVars = {
-    urls: userURLs,
+    urls: urlDatabase,
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
-    user: req.session.user_id
+    user: userID,
   };
+
   res.render('urls_show', templateVars);
 });
 
@@ -111,23 +112,26 @@ app.post('/urls', (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
-app.post('/urls/:id/delete', (req, res) => {
+app.delete('/urls/:id', (req, res) => {
   const userID = req.session.user_id;
   const shortURL = req.params.id;
 
   if (userID !== urlDatabase[shortURL].userID) {
-    return res.status(401).send("You don't have permission to delete this URL");
+    let errMsg = "You don't have permission to delete this URL";
+    return res.status(401).render("urls_index", { errMsg });
   }
+
   delete urlDatabase[shortURL];
-  
   res.redirect('/urls');
 });
 
-app.post('/urls/:id', (req, res) => {
+app.put('/urls/:id', (req, res) => {
   const shortURL = req.params.id;
   const updatedLongURL = req.body.longURL;
+
   urlDatabase[shortURL].longURL = updatedLongURL;
-  res.redirect('/urls');
+  console.log(updatedLongURL);
+  res.redirect('/urls/');
 });
 
 app.post('/login', (req, res) => {
@@ -178,9 +182,6 @@ app.post('/register', (req, res) => {
 
   users[id] = { id, email, hashedPassword };
 
-  console.log(hashedPassword);
-  console.log(password);
-  console.log(users);
   // eslint-disable-next-line camelcase
   req.session.user_id = id;
   res.redirect('/urls');
