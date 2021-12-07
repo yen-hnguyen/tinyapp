@@ -10,7 +10,7 @@
         <a class='nav-item nav-link' href='/urls/new'>Create New URL</a>
       </div>
     </div>
-    <% if (user) { %>
+    <% if (user && !locals.errMsg) { %>
     <form class="form-inline" action="/logout" method="POST">
       <div class="form-group">
         <label class="mr-4" style="color: #FFFFFF;">Hi, <%= user.email %>!</label>
