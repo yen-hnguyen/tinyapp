@@ -176,7 +176,6 @@ app.post('/register', (req, res) => {
     return res.status(400).render('register', { errMsg, user });
   }
 
-
   if (user.email === email) {
     errMsg = 'There is existing account associated with the email.';
     return res.status(400).render('register', { errMsg, user });
