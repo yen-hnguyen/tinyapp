@@ -16,7 +16,7 @@
   <div class='alert alert-danger text-center'>
     <strong>Error: You need to <a href="/login">login</a> or <a href="/register">register</a> to see this page</strong>
   </div>
-<% } else if (urls[shortURL].userID !== user) { %>
+<% } else if (urls[shortURL].userID !== user.id) { %>
   <div class='alert alert-danger text-center'>
     <strong>Error: This URL is not belong to you</strong>
   </div>

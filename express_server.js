@@ -9,7 +9,6 @@ const { findUserByEmail, generateRandomString, generateRandomUserID, urlsForUser
 const app = express();
 const PORT = 8080;
 
-
 app.use(cookieSession({
   name: 'session',
   keys: ['key1'],
@@ -63,7 +62,7 @@ app.get('/urls', (req, res) => {
 
 app.get('/urls/new', (req, res) => {
   const userID = req.session.user_id;
-  const newLongURL = req.params.longURL;
+
   const templateVars = {
     urls: urlDatabase,
     user: users[userID]
@@ -73,13 +72,15 @@ app.get('/urls/new', (req, res) => {
 
 app.get('/urls/:id', (req, res) => {
   const userID = req.session.user_id;
+
   const templateVars = {
     urls: urlDatabase,
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
-    user: userID,
+    user: users[userID],
   };
 
+  console.log(users[userID]);
   res.render('urls_show', templateVars);
 });
 
@@ -89,9 +90,11 @@ app.get('/u/:id', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
+  const userID = req.session.user_id;
+
   const templateVars = {
     urls: urlDatabase,
-    user: users[req.session.user_id]
+    user: users[userID]
   };
   res.render('login', templateVars);
 });
@@ -101,7 +104,6 @@ app.get('/register', (req, res) => {
     urls: urlDatabase,
     user: req.session.user_id
   };
-  console.log(users);
   res.render('register', templateVars);
 });
 
@@ -109,11 +111,11 @@ app.get('/register', (req, res) => {
 /* --------POST ROUTE--------- */
 app.post('/urls', (req, res) => {
   const shortURL = generateRandomString();
+
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
     userID: req.session.user_id
   };
-  console.log(urlDatabase);
   res.redirect(`urls/${shortURL}`);
 });
 
