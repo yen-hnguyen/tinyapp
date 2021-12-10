@@ -45,6 +45,10 @@ const users = {
 
 /* --------GET ROUTE--------- */
 
+app.get('/', (req, res) => {
+  res.redirect('/urls');
+});
+
 app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
@@ -149,12 +153,12 @@ app.post('/login', (req, res) => {
   
   if (!email || !password) {
     errMsg = 'Email or Password cannot be blank.';
-    return res.status(400).render('login', { errMsg });
+    return res.status(400).render('login', { errMsg, user });
   }
   
   if (!user || !bcrypt.compareSync(password, user.password)) {
     errMsg = 'Incorrect Email or Password.';
-    return res.status(400).render('login', { errMsg });
+    return res.status(400).render('login', { errMsg, user });
   }
 
   // eslint-disable-next-line camelcase
@@ -176,16 +180,16 @@ app.post('/register', (req, res) => {
     return res.status(400).render('register', { errMsg, user });
   }
 
-  if (user.email === email) {
+  if (user) {
     errMsg = 'There is existing account associated with the email.';
     return res.status(400).render('register', { errMsg, user });
   }
 
   users[id] = { id, email, hashedPassword };
-
   // eslint-disable-next-line camelcase
   req.session.user_id = id;
   res.redirect('/urls');
+
 });
 
 app.post('/logout', (req, res) => {
