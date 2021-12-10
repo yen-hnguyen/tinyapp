@@ -6,7 +6,6 @@ const findUserByEmail = (email, database) => {
       return user;
     }
   }
-  return undefined;
 };
 
 // Function to generate random string for short URL
